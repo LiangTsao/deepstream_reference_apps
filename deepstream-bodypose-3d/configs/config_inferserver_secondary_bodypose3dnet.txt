@@ -1,0 +1,90 @@
+################################################################################
+# SPDX-FileCopyrightText: Copyright (c) 2019-2022 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+
+infer_config {
+  unique_id: 2
+  #unique_id: 10
+  gpu_ids: [0]
+  max_batch_size: 8
+  backend {
+#    inputs{
+#      name : "input0"
+#      dims : [3, 256, 192] 
+#      data_type : TENSOR_DT_FP32
+#      }
+   # outputs{
+   #       ["pose2d","pose2d_org_img","pose25d","pose3d"]
+   # }
+    triton {
+      model_name: "bodypose3dnet_accuracy"
+      version: -1
+      model_repo {
+        root: "../triton_model_repo"
+        strict_model_config: true
+        log_level : 1
+        # Triton runtime would reserve 64MB pinned memory
+        #pinned_memory_pool_byte_size: 67108864
+        # Triton runtim would reserve 64MB CUDA device memory on GPU 0
+        #cuda_device_memory { device: 0, memory_pool_byte_size: 67108864 }
+      }
+    }
+  }
+
+  preprocess {
+    #network_format: IMAGE_FORMAT_BGR
+    network_format: MEDIA_FORMAT_NONE
+    tensor_order: TENSOR_ORDER_LINEAR
+    tensor_name: "input0"
+    maintain_aspect_ratio: 0
+    frame_scaling_hw: FRAME_SCALING_HW_DEFAULT
+    frame_scaling_filter: 1
+    symmetric_padding: 0
+    normalize {
+      scale_factor: 0.00392156
+      channel_offsets: [0, 0, 0]
+    }
+  }
+
+  postprocess {
+   other {
+      type_name: "Body3D"
+    }
+  }
+
+
+  extra {
+    copy_input_to_host_buffers: false
+    output_buffer_pool_size: 5
+  }
+
+  custom_lib {
+    path: "../sources/nvdsinfer_custom_impl_BodyPose3DNet/libnvdsinfer_custom_impl_BodyPose3DNet.so"
+  }
+}
+
+
+input_control {
+  process_mode: PROCESS_MODE_CLIP_OBJECTS
+  operate_on_gie_id: 1
+  operate_on_class_ids: [0]
+  interval: 0
+  ###async_mode: true
+}
+
+output_control {
+  output_tensor_meta: true
+}

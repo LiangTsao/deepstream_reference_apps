@@ -74,8 +74,8 @@ GST_DEBUG_CATEGORY_STATIC (NVDS_APP);  // define category (statically)
 #define GST_CAPS_FEATURES_NVMM "memory:NVMM"
 #define CONFIG_GPU_ID "gpu-id"
 
-#define PGIE_CONFIG_FILE "../configs/config_infer_primary_peoplenet.txt"
-#define SGIE_CONFIG_FILE "../configs/config_infer_secondary_bodypose3dnet.txt"
+#define PGIE_CONFIG_FILE "../configs/config_inferserver_primary_peoplenet.txt"
+#define SGIE_CONFIG_FILE "../configs/config_inferserver_secondary_bodypose3dnet.txt"
 #define TRACKER_CONFIG_FILE "../configs/config_tracker.txt"
 #define CONFIG_GROUP_TRACKER "tracker"
 #define CONFIG_GROUP_TRACKER_WIDTH "tracker-width"
@@ -1735,7 +1735,7 @@ are published to the message broker.",
 
   /* Use nvinfer to run inferencing on decoder's output,
    * behaviour of inferencing is set through config file */
-  pgie = gst_element_factory_make("nvinfer", "primary-nvinference-engine");
+  pgie = gst_element_factory_make("nvinferserver", "primary-nvinference-engine");
   if (!pgie) {
     g_printerr ("PGIE element could not be created. Exiting.\n");
     return -1;
@@ -1793,7 +1793,7 @@ are published to the message broker.",
   //streammux_sgie = gst_element_factory_make ("nvstreammux", "streammux-sgie");
 
   /* 3d bodypose secondary gie */
-  GstElement* sgie = gst_element_factory_make("nvinfer", "secondary-nvinference-engine");
+  GstElement* sgie = gst_element_factory_make("nvinferserver", "secondary-nvinference-engine");
   if (!sgie) {
     g_printerr ("Secondary nvinfer could not be created. Exiting.\n");
     return -1;
@@ -1801,7 +1801,6 @@ are published to the message broker.",
   //---Set sgie properties---
   /* Configure the nvinfer element using the nvinfer config file. */
   g_object_set(G_OBJECT(sgie),
-    "output-tensor-meta", TRUE,
     "config-file-path", SGIE_CONFIG_FILE,
     NULL);
 
