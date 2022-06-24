@@ -1134,6 +1134,10 @@ sgie_src_pad_buffer_probe(GstPad *pad, GstPadProbeInfo *info,
       }
     }
   }
+  g_print ("\n\n\n\n\n\nEND batch_id=%d frame_num=%d num_obj_meta=%d i=%d \n\n\n\n\n\n",
+                     frame_meta->batch_id,
+                     frame_meta->frame_num,
+                     frame_meta->num_obj_meta);
 
   if (_pose_file) {// closing off "batches" key.
     if (batch_meta->frame_meta_list) {
